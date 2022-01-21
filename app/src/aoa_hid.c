@@ -118,9 +118,68 @@ sc_aoa_open_usb_handle(libusb_device *device, libusb_device_handle **handle) {
     return 0;
 }
 
+static int
+sc_aoa_libusb_callback(libusb_context *ctx, libusb_device *device,
+                       libusb_hotplug_event event, void *userdata) {
+    (void) ctx;
+    (void) device;
+    (void) event;
+
+    struct sc_aoa *aoa = userdata;
+    assert(aoa->cbs && aoa->cbs->on_disconnected);
+    aoa->cbs->on_disconnected(aoa, aoa->cbs_userdata);
+
+    // Do not automatically deregister the callback by returning 1. Instead,
+    // manually deregister to interrupt libusb_handle_events() from the libusb
+    // event thread: <https://stackoverflow.com/a/60119225/1987178>
+    return 0;
+}
+
+static int
+run_libusb_event_handler(void *data) {
+    struct sc_aoa *aoa = data;
+    while (!atomic_load_explicit(&aoa->stopped, memory_order_relaxed)) {
+        // Interrupted by events or by libusb_hotplug_deregister_callback()
+        libusb_handle_events(aoa->usb_context);
+    }
+    return 0;
+}
+
+static bool
+sc_aoa_register_callback(struct sc_aoa *aoa) {
+    if (!libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG)) {
+        LOGW("libusb does not have hotplug capability");
+        return false;
+    }
+
+    struct libusb_device_descriptor desc;
+    if (libusb_get_device_descriptor(aoa->usb_device, &desc)) {
+        LOGW("Could not read USB device descriptor");
+        return false;
+    }
+
+    int events = LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT;
+    int flags = LIBUSB_HOTPLUG_NO_FLAGS;
+    int vendor_id = desc.idVendor;
+    int product_id = desc.idProduct;
+    int dev_class = LIBUSB_HOTPLUG_MATCH_ANY;
+    int ret =
+        libusb_hotplug_register_callback(aoa->usb_context, events, flags,
+                                         vendor_id, product_id, dev_class,
+                                         sc_aoa_libusb_callback, aoa,
+                                         &aoa->callback_handle);
+    if (ret) {
+        LOGW("Could not register USB callback");
+        return false;
+    }
+
+    aoa->has_callback_handle = true;
+    return true;
+}
+
 bool
-sc_aoa_init(struct sc_aoa *aoa, const char *serial,
-            struct sc_acksync *acksync) {
+sc_aoa_init(struct sc_aoa *aoa, const char *serial, struct sc_acksync *acksync,
+            const struct sc_aoa_callbacks *cbs, void *cbs_userdata) {
     assert(acksync);
 
     cbuf_init(&aoa->queue);
@@ -151,6 +210,29 @@ sc_aoa_init(struct sc_aoa *aoa, const char *serial,
 
     atomic_init(&aoa->stopped, false);
     aoa->acksync = acksync;
+
+    aoa->has_callback_handle = false;
+    aoa->has_libusb_event_thread = false;
+
+    // If cbs is set, then cbs->on_disconnected must be set
+    assert(!cbs || cbs->on_disconnected);
+    aoa->cbs = cbs;
+    aoa->cbs_userdata = cbs_userdata;
+    if (cbs) {
+        if (sc_aoa_register_callback(aoa)) {
+            // Create a thread to process libusb events, so that device
+            // disconnection could be detected immediately
+            aoa->has_libusb_event_thread =
+                sc_thread_create(&aoa->libusb_event_thread,
+                                 run_libusb_event_handler, "scrcpy-usbev", aoa);
+            if (!aoa->has_libusb_event_thread) {
+                LOGW("Libusb event thread handler could not be created, USB "
+                     "device disconnection might not be detected immediately");
+            }
+        } else {
+            LOGW("Could not register USB device disconnection callback");
+        }
+    }
 
     return true;
 
@@ -390,10 +472,18 @@ sc_aoa_stop(struct sc_aoa *aoa) {
     sc_cond_signal(&aoa->event_cond);
     sc_mutex_unlock(&aoa->mutex);
 
+    if (aoa->has_callback_handle) {
+        libusb_hotplug_deregister_callback(aoa->usb_context,
+                                           aoa->callback_handle);
+    }
+
     sc_acksync_interrupt(aoa->acksync);
 }
 
 void
 sc_aoa_join(struct sc_aoa *aoa) {
     sc_thread_join(&aoa->thread, NULL);
+    if (aoa->has_libusb_event_thread) {
+        sc_thread_join(&aoa->libusb_event_thread, NULL);
+    }
 }
