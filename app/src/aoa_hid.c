@@ -180,8 +180,6 @@ sc_aoa_register_callback(struct sc_aoa *aoa) {
 bool
 sc_aoa_init(struct sc_aoa *aoa, const char *serial, struct sc_acksync *acksync,
             const struct sc_aoa_callbacks *cbs, void *cbs_userdata) {
-    assert(acksync);
-
     cbuf_init(&aoa->queue);
 
     if (!sc_mutex_init(&aoa->mutex)) {
@@ -426,6 +424,11 @@ run_aoa_thread(void *data) {
 
         if (ack_to_wait != SC_SEQUENCE_INVALID) {
             LOGD("Waiting ack from server sequence=%" PRIu64_, ack_to_wait);
+
+            // If some events have ack_to_wait set, then sc_aoa must have been
+            // initialized with a non NULL acksync
+            assert(aoa->acksync);
+
             // Do not block the loop indefinitely if the ack never comes (it
             // should never happen)
             sc_tick deadline = sc_tick_now() + SC_TICK_FROM_MS(500);
@@ -477,7 +480,9 @@ sc_aoa_stop(struct sc_aoa *aoa) {
                                            aoa->callback_handle);
     }
 
-    sc_acksync_interrupt(aoa->acksync);
+    if (aoa->acksync) {
+        sc_acksync_interrupt(aoa->acksync);
+    }
 }
 
 void
