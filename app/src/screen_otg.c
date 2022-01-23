@@ -103,8 +103,26 @@ sc_screen_otg_is_mouse_capture_key(SDL_Keycode key) {
 }
 
 static void
-sc_screen_otg_forward_event(struct sc_screen_otg *screen, SDL_Event *event) {
-    switch 
+sc_screen_otg_process_key(struct sc_screen_otg *screen,
+                             const SDL_KeyboardEvent *event) {
+}
+
+static void
+sc_screen_otg_process_mouse_motion(struct sc_screen_otg *screen,
+                                   const SDL_MouseMotionEvent *event) {
+
+}
+
+static void
+sc_screen_otg_process_mouse_button(struct sc_screen_otg *screen,
+                                   const SDL_MouseButtonEvent *event) {
+
+}
+
+static void
+sc_screen_otg_process_mouse_wheel(struct sc_screen_otg *screen,
+                                  const SDL_MouseWheelEvent *event) {
+
 }
 
 void
@@ -130,6 +148,8 @@ sc_screen_otg_handle_event(struct sc_screen_otg *screen, SDL_Event *event) {
                     // (un)capture
                     screen->mouse_capture_key_pressed = 0;
                 }
+                // Mouse capture keys are never forwarded to the device
+                return;
             }
 
             sc_screen_otg_process_key(screen, &event->key);
@@ -139,20 +159,20 @@ sc_screen_otg_handle_event(struct sc_screen_otg *screen, SDL_Event *event) {
             SDL_Keycode key = event->key.keysym.sym;
             SDL_Keycode cap = screen->mouse_capture_key_pressed;
             screen->mouse_capture_key_pressed = 0;
-            if (key == cap) {
-                // A mouse capture key has been pressed then released:
-                // toggle the capture mouse mode
-                sc_screen_otg_capture_mouse(screen, !screen->mouse_captured);
-            } else {
-                sc_screen_otg_process_key(screen, &event->key);
+            if (sc_screen_otg_is_mouse_capture_key(key)) {
+                if (key == cap) {
+                    // A mouse capture key has been pressed then released:
+                    // toggle the capture mouse mode
+                    sc_screen_otg_capture_mouse(screen,
+                                                !screen->mouse_captured);
+                }
+                // Mouse capture keys are never forwarded to the device
+                return;
             }
+
+            sc_screen_otg_process_key(screen, &event->key);
             break;
         }
-        case SDL_MOUSEWHEEL:
-            if (screen->mouse_captured) {
-                sc_screen_otg_process_mouse_wheel(screen, &event->wheel);
-            }
-            break;
         case SDL_MOUSEMOTION:
             if (screen->mouse_captured) {
                 sc_screen_otg_process_mouse_motion(screen, &event->motion);
@@ -170,7 +190,10 @@ sc_screen_otg_handle_event(struct sc_screen_otg *screen, SDL_Event *event) {
                 sc_screen_otg_capture_mouse(screen, true);
             }
             break;
+        case SDL_MOUSEWHEEL:
+            if (screen->mouse_captured) {
+                sc_screen_otg_process_mouse_wheel(screen, &event->wheel);
+            }
+            break;
     }
-
-    sc_screen_otg_forward_event(screen, event);
 }
