@@ -104,7 +104,7 @@ sc_screen_otg_is_mouse_capture_key(SDL_Keycode key) {
 
 static void
 sc_screen_otg_forward_event(struct sc_screen_otg *screen, SDL_Event *event) {
-
+    switch 
 }
 
 void
@@ -125,14 +125,14 @@ sc_screen_otg_handle_event(struct sc_screen_otg *screen, SDL_Event *event) {
             if (sc_screen_otg_is_mouse_capture_key(key)) {
                 if (!screen->mouse_capture_key_pressed) {
                     screen->mouse_capture_key_pressed = key;
-                    return;
                 } else {
                     // Another mouse capture key has been pressed, cancel mouse
                     // (un)capture
                     screen->mouse_capture_key_pressed = 0;
-                    // Do not return, the event must be forwarded to the device
                 }
             }
+
+            sc_screen_otg_process_key(screen, &event->key);
             break;
         }
         case SDL_KEYUP: {
@@ -143,24 +143,31 @@ sc_screen_otg_handle_event(struct sc_screen_otg *screen, SDL_Event *event) {
                 // A mouse capture key has been pressed then released:
                 // toggle the capture mouse mode
                 sc_screen_otg_capture_mouse(screen, !screen->mouse_captured);
-                return;
+            } else {
+                sc_screen_otg_process_key(screen, &event->key);
             }
-            // Do not return, the event must be forwarded to the device
             break;
         }
         case SDL_MOUSEWHEEL:
+            if (screen->mouse_captured) {
+                sc_screen_otg_process_mouse_wheel(screen, &event->wheel);
+            }
+            break;
         case SDL_MOUSEMOTION:
+            if (screen->mouse_captured) {
+                sc_screen_otg_process_mouse_motion(screen, &event->motion);
+            }
+            break;
         case SDL_MOUSEBUTTONDOWN:
-            if (!screen->mouse_captured) {
-                // Do not forward to the device, the mouse will be captured on
-                // SDL_MOUSEBUTTONUP
-                return;
+            if (screen->mouse_captured) {
+                sc_screen_otg_process_mouse_button(screen, &event->button);
             }
             break;
         case SDL_MOUSEBUTTONUP:
-            if (!screen->mouse_captured) {
+            if (screen->mouse_captured) {
+                sc_screen_otg_process_mouse_button(screen, &event->button);
+            } else {
                 sc_screen_otg_capture_mouse(screen, true);
-                return;
             }
             break;
     }
