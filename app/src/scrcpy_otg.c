@@ -2,20 +2,48 @@
 
 #include <SDL2/SDL.h>
 
+#include "events.h"
 #include "screen_otg.h"
+#include "util/log.h"
 
 struct scrcpy_otg {
     struct sc_aoa aoa;
-    struct sc_hid_keyboard keyboard_hid;
-    struct sc_hid_mouse mouse_hid;
+    struct sc_hid_keyboard keyboard;
+    struct sc_hid_mouse mouse;
 
-    struct sc_screen_hidonly screen_hidonly;
+    struct sc_screen_otg screen_otg;
 };
 
 static void
 sc_aoa_on_disconnected(struct sc_aoa *aoa, void *userdata) {
+    (void) aoa;
     (void) userdata;
 
+    SDL_Event event;
+    event.type = EVENT_USB_DEVICE_DISCONNECTED;
+    int ret = SDL_PushEvent(&event);
+    if (ret < 0) {
+        LOGE("Could not post USB disconnection event: %s", SDL_GetError());
+    }
+}
+
+static bool
+event_loop(struct scrcpy_otg *s) {
+    SDL_Event event;
+    while (SDL_WaitEvent(&event)) {
+        switch (event.type) {
+            case EVENT_USB_DEVICE_DISCONNECTED:
+                LOGW("Device disconnected");
+                return false;
+            case SDL_QUIT:
+                LOGD("User requested to quit");
+                return true;
+            default:
+                sc_screen_otg_handle_event(&s->screen_otg, &event);
+                break;
+        }
+    }
+    return false;
 }
 
 bool
@@ -34,7 +62,6 @@ scrcpy_otg(struct scrcpy_options *options) {
 
     atexit(SDL_Quit);
 
-    bool aoa_hid_initialized = false;
     bool hid_keyboard_initialized = false;
     bool hid_mouse_initialized = false;
 
@@ -44,11 +71,10 @@ scrcpy_otg(struct scrcpy_options *options) {
     static const struct sc_aoa_callbacks cbs = {
         .on_disconnected = sc_aoa_on_disconnected,
     };
-    bool ok = sc_aoa_init(&s->aoa, serial, NULL, cbs, NULL);
+    bool ok = sc_aoa_init(&s->aoa, serial, NULL, &cbs, NULL);
     if (!ok) {
-        goto end;
+        return false;
     }
-    aoa_hid_initialized = true;
 
     ok = sc_hid_keyboard_init(&s->keyboard, &s->aoa);
     if (!ok) {
@@ -66,7 +92,7 @@ scrcpy_otg(struct scrcpy_options *options) {
 
     const char *window_title = options->window_title;
 
-    struct sc_screen_hidonly_params params = {
+    struct sc_screen_otg_params params = {
         .keyboard = keyboard,
         .mouse = mouse,
         .window_title = window_title,
@@ -80,15 +106,17 @@ scrcpy_otg(struct scrcpy_options *options) {
         return false;
     }
 
-    bool ret = event_loop(&s);
+    bool ret = event_loop(s);
+    LOGD("quit...");
 
 end:
     if (hid_keyboard_initialized) {
-        if (hid_mouse_initialized) {
-            
-        }
-        if (hid_keyboard_initialized) {
-
-        }
+        sc_hid_keyboard_destroy(&s->keyboard);
     }
+    if (hid_mouse_initialized) {
+        sc_hid_mouse_destroy(&s->mouse);
+    }
+    sc_aoa_stop(&s->aoa);
+
+    return ret;
 }
