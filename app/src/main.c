@@ -13,6 +13,7 @@
 #include "cli.h"
 #include "options.h"
 #include "scrcpy.h"
+#include "scrcpy_otg.h"
 #include "util/log.h"
 
 static void
@@ -90,7 +91,7 @@ main(int argc, char *argv[]) {
         return 1;
     }
 
-    int res = scrcpy(&args.opts) ? 0 : 1;
+    int res = scrcpy_otg(&args.opts) ? 0 : 1;
 
     avformat_network_deinit(); // ignore failure
 

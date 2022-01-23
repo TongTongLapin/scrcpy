@@ -90,7 +90,9 @@ scrcpy_otg(struct scrcpy_options *options) {
     hid_mouse_initialized = true;
     mouse = &s->mouse;
 
-    const char *window_title = options->window_title;
+    // TODO device name
+    const char *window_title = options->window_title ? options->window_title
+                                                     : "scrcpy";
 
     struct sc_screen_otg_params params = {
         .keyboard = keyboard,

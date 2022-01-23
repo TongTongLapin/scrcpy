@@ -10,6 +10,9 @@
 #include "hid_mouse.h"
 
 struct sc_screen_otg {
+    struct sc_hid_keyboard *keyboard;
+    struct sc_hid_mouse *mouse;
+
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *texture;
