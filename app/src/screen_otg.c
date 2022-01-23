@@ -106,6 +106,8 @@ static void
 sc_screen_otg_process_key(struct sc_screen_otg *screen,
                              const SDL_KeyboardEvent *event) {
     struct sc_key_processor *kp = &screen->keyboard->key_processor;
+    assert(kp);
+
     struct sc_key_event evt = {
         .action = sc_action_from_sdl_keyboard_type(event->type),
         .keycode = sc_keycode_from_sdl(event->keysym.sym),
@@ -113,25 +115,66 @@ sc_screen_otg_process_key(struct sc_screen_otg *screen,
         .repeat = event->repeat,
         .mods_state = sc_mods_state_from_sdl(event->keysym.mod),
     };
+
+    assert(kp->ops->process_key);
     kp->ops->process_key(kp, &evt, SC_SEQUENCE_INVALID);
 }
 
 static void
 sc_screen_otg_process_mouse_motion(struct sc_screen_otg *screen,
                                    const SDL_MouseMotionEvent *event) {
+    struct sc_mouse_processor *mp = &screen->mouse->mouse_processor;
+    assert(mp);
 
+    struct sc_mouse_motion_event evt = {
+        // .position not used for HID events
+        .xrel = event->xrel,
+        .yrel = event->yrel,
+        .buttons_state = sc_mouse_buttons_state_from_sdl(event->state, true),
+    };
+
+    assert(mp->ops->process_mouse_motion);
+    mp->ops->process_mouse_motion(mp, &evt);
 }
 
 static void
 sc_screen_otg_process_mouse_button(struct sc_screen_otg *screen,
                                    const SDL_MouseButtonEvent *event) {
+    struct sc_mouse_processor *mp = &screen->mouse->mouse_processor;
+    assert(mp);
 
+    uint32_t sdl_buttons_state = SDL_GetMouseState(NULL, NULL);
+
+    struct sc_mouse_click_event evt = {
+        // .position not used for HID events
+        .action = sc_action_from_sdl_mousebutton_type(event->type),
+        .button = sc_mouse_button_from_sdl(event->button),
+        .buttons_state =
+            sc_mouse_buttons_state_from_sdl(sdl_buttons_state, true),
+    };
+
+    assert(mp->ops->process_mouse_click);
+    mp->ops->process_mouse_click(mp, &evt);
 }
 
 static void
 sc_screen_otg_process_mouse_wheel(struct sc_screen_otg *screen,
                                   const SDL_MouseWheelEvent *event) {
+    struct sc_mouse_processor *mp = &screen->mouse->mouse_processor;
+    assert(mp);
 
+    uint32_t sdl_buttons_state = SDL_GetMouseState(NULL, NULL);
+
+    struct sc_mouse_scroll_event evt = {
+        // .position not used for HID events
+        .hscroll = event->x,
+        .vscroll = event->y,
+        .buttons_state =
+            sc_mouse_buttons_state_from_sdl(sdl_buttons_state, true),
+    };
+
+    assert(mp->ops->process_mouse_scroll);
+    mp->ops->process_mouse_scroll(mp, &evt);
 }
 
 void
