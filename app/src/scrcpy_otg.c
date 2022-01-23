@@ -64,6 +64,7 @@ scrcpy_otg(struct scrcpy_options *options) {
 
     bool hid_keyboard_initialized = false;
     bool hid_mouse_initialized = false;
+    bool aoa_started = false;
 
     struct sc_hid_keyboard *keyboard = NULL;
     struct sc_hid_mouse *mouse = NULL;
@@ -89,6 +90,12 @@ scrcpy_otg(struct scrcpy_options *options) {
     }
     hid_mouse_initialized = true;
     mouse = &s->mouse;
+
+    ok = sc_aoa_start(&s->aoa);
+    if (!ok) {
+        goto end;
+    }
+    aoa_started = true;
 
     // TODO device name
     const char *window_title = options->window_title ? options->window_title
@@ -118,7 +125,11 @@ end:
     if (hid_mouse_initialized) {
         sc_hid_mouse_destroy(&s->mouse);
     }
-    sc_aoa_stop(&s->aoa);
+    if (aoa_started) {
+        sc_aoa_stop(&s->aoa);
+        sc_aoa_join(&s->aoa);
+    }
+    sc_aoa_destroy(&s->aoa);
 
     return ret;
 }

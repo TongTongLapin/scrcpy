@@ -105,6 +105,15 @@ sc_screen_otg_is_mouse_capture_key(SDL_Keycode key) {
 static void
 sc_screen_otg_process_key(struct sc_screen_otg *screen,
                              const SDL_KeyboardEvent *event) {
+    struct sc_key_processor *kp = &screen->keyboard->key_processor;
+    struct sc_key_event evt = {
+        .action = sc_action_from_sdl_keyboard_type(event->type),
+        .keycode = sc_keycode_from_sdl(event->keysym.sym),
+        .scancode = sc_scancode_from_sdl(event->keysym.scancode),
+        .repeat = event->repeat,
+        .mods_state = sc_mods_state_from_sdl(event->keysym.mod),
+    };
+    kp->ops->process_key(kp, &evt, SC_SEQUENCE_INVALID);
 }
 
 static void
