@@ -995,31 +995,31 @@ To override the path of the `scrcpy-server` file, configure its path in
 To override the icon, configure its path in `SCRCPY_ICON_PATH`.
 
 
-## Why _scrcpy_?
+## Pourquoi _scrcpy_?
 
-A colleague challenged me to find a name as unpronounceable as [gnirehtet].
+Un collègue m'a mis au défi de trouver un nom imprononçable comme [gnirehtet].
 
-[`strcpy`] copies a **str**ing; `scrcpy` copies a **scr**een.
+[`strcpy`] copie « **str**ing »; `scrcpy` copie « **scr**een ».
 
 [gnirehtet]: https://github.com/Genymobile/gnirehtet
 [`strcpy`]: http://man7.org/linux/man-pages/man3/strcpy.3.html
 
 
-## How to build?
+## Comment construire?
 
-See [BUILD].
+Voir [BUILD].
 
 
 ## Common issues
 
-See the [FAQ](FAQ.md).
+Voir la [Foire Aux Questions](FAQ.md).
 
 
-## Developers
+## Développeurs
 
-Read the [developers page].
+Lire le [document de développeurs].
 
-[developers page]: DEVELOP.md
+[document de développeurs]: DEVELOP.md
 
 
 ## Licence
@@ -1041,24 +1041,9 @@ Read the [developers page].
 
 ## Articles
 
-- [Introducing scrcpy][article-intro]
-- [Scrcpy now works wirelessly][article-tcpip]
+- [Présenter scrcpy(en anglais)][article-intro]
+- [Scrcpy fonctionne maintenant sans fil(an anglais)][article-tcpip]
 
 [article-intro]: https://blog.rom1v.com/2018/03/introducing-scrcpy/
 [article-tcpip]: https://www.genymotion.com/blog/open-source-project-scrcpy-now-works-wirelessly/
 
-## Translations
-
-This README is available in other languages:
-
-- [Indonesian (Indonesia, `id`) - v1.16](README.id.md)
-- [Italiano (Italiano, `it`) - v1.19](README.it.md)
-- [日本語 (Japanese, `jp`) - v1.19](README.jp.md)
-- [한국어 (Korean, `ko`) - v1.11](README.ko.md)
-- [Português Brasileiro (Brazilian Portuguese, `pt-BR`) - v1.19](README.pt-br.md)
-- [Español (Spanish, `sp`) - v1.17](README.sp.md)
-- [简体中文 (Simplified Chinese, `zh-Hans`) - v1.20](README.zh-Hans.md)
-- [繁體中文 (Traditional Chinese, `zh-Hant`) - v1.15](README.zh-Hant.md)
-- [Turkish (Turkish, `tr`) - v1.18](README.tr.md)
-
-Only this README file is guaranteed to be up-to-date.
