@@ -43,17 +43,17 @@ Sur certains appareils, vous aussi avez besoin d’activer [un paramètre suppl�
 [control]: https://github.com/Genymobile/scrcpy/issues/70#issuecomment-373286323
 
 
-## Get the app
+## Obtenir les applications
 
 <a href="https://repology.org/project/scrcpy/versions"><img src="https://repology.org/badge/vertical-allrepos/scrcpy.svg" alt="Packaging status" align="right"></a>
 
-### Summary
+### Sommaire
 
  - Linux: `apt install scrcpy`
- - Windows: [download][direct-win64]
+ - Windows: [téléchargez][direct-win64]
  - macOS: `brew install scrcpy`
 
-Build from sources: [BUILD] ([simplified process][BUILD_simple])
+Construire des codes sources: [BUILD] ([procédure simplifiée][BUILD_simple])
 
 [BUILD]: BUILD.md
 [BUILD_simple]: BUILD.md#simple
@@ -61,50 +61,49 @@ Build from sources: [BUILD] ([simplified process][BUILD_simple])
 
 ### Linux
 
-On Debian and Ubuntu:
+Sous Debian et Ubuntu:
 
 ```
 apt install scrcpy
 ```
 
-On Arch Linux:
+Sous Arch Linux:
 
 ```
 pacman -S scrcpy
 ```
 
-A [Snap] package is available: [`scrcpy`][snap-link].
+Un paquet [Snap] est disponible: [`scrcpy`][snap-link].
 
 [snap-link]: https://snapstats.org/snaps/scrcpy
 
 [snap]: https://en.wikipedia.org/wiki/Snappy_(package_manager)
 
-For Fedora, a [COPR] package is available: [`scrcpy`][copr-link].
+Pour Fedora, un paquet [COPR] est disponible: [`scrcpy`][copr-link].
 
 [COPR]: https://fedoraproject.org/wiki/Category:Copr
 [copr-link]: https://copr.fedorainfracloud.org/coprs/zeno/scrcpy/
 
 
-For Gentoo, an [Ebuild] is available: [`scrcpy/`][ebuild-link].
+Pour Gentoo, un paquet [Ebuild] est disponible: [`scrcpy/`][ebuild-link].
 
 [Ebuild]: https://wiki.gentoo.org/wiki/Ebuild
 [ebuild-link]: https://github.com/maggu2810/maggu2810-overlay/tree/master/app-mobilephone/scrcpy
 
-You could also [build the app manually][BUILD] ([simplified
-process][BUILD_simple]).
+Vous pourriez aussi [construire l'application manuellement][BUILD] ([procédure simplifiée][BUILD_simple]).
 
 
 ### Windows
 
-For Windows, for simplicity, a prebuilt archive with all the dependencies
-(including `adb`) is available:
+Pour Windows, pour la simplicité, des archives préconstruits avec tous les dépendances
+(y compris `adb`) est disponible:
 
  - [`scrcpy-win64-v1.21.zip`][direct-win64]  
    _(SHA-256: fdab0c1421353b592a9bbcebd6e252675eadccca65cca8105686feaa9c1ded53)_
 
 [direct-win64]: https://github.com/Genymobile/scrcpy/releases/download/v1.21/scrcpy-win64-v1.21.zip
 
-It is also available in [Chocolatey]:
+Elle est aussi disponible dans [Chocolatey]:
 
 [Chocolatey]: https://chocolatey.org/
 
@@ -113,7 +112,7 @@ choco install scrcpy
 choco install adb    # if you don't have it yet
 ```
 
-And in [Scoop]:
+Puis, dans [Scoop]:
 
 ```bash
 scoop install scrcpy
@@ -122,12 +121,12 @@ scoop install adb    # if you don't have it yet
 
 [Scoop]: https://scoop.sh
 
-You can also [build the app manually][BUILD].
+Vous pourriez aussi [construire l'application manuellement][BUILD].
 
 
 ### macOS
 
-The application is available in [Homebrew]. Just install it:
+L'application est disponible dans [Homebrew]. Installez-la seulement !:
 
 [Homebrew]: https://brew.sh/
 
@@ -135,13 +134,13 @@ The application is available in [Homebrew]. Just install it:
 brew install scrcpy
 ```
 
-You need `adb`, accessible from your `PATH`. If you don't have it yet:
+Vous avez besoin de `adb`, accessible de votre `PATH`. Si vous ne l'avez pas encore:
 
 ```bash
 brew install android-platform-tools
 ```
 
-It's also available in [MacPorts], which sets up adb for you:
+Elle est aussi disponible dans [MacPorts], qui mets en place adb pour vous:
 
 ```bash
 sudo port install scrcpy
@@ -150,7 +149,7 @@ sudo port install scrcpy
 [MacPorts]: https://www.macports.org/
 
 
-You can also [build the app manually][BUILD].
+Vous pourriez aussi [construire l'application manuellement][BUILD].
 
 
 ## Run
@@ -980,19 +979,19 @@ All <kbd>Ctrl</kbd>+_key_ shortcuts are forwarded to the device, so they are
 handled by the active application.
 
 
-## Custom paths
+## Chemins personnalisés
 
-To use a specific _adb_ binary, configure its path in the environment variable
+Pour utiliser un binaire _adb_ spécifique, configurer son chemin dans la variable d'environnement
 `ADB`:
 
 ```bash
 ADB=/path/to/adb scrcpy
 ```
 
-To override the path of the `scrcpy-server` file, configure its path in
+Pour rédéfinir le chemin de le fichier de « scrcpy-server », configurez son chemin dans
 `SCRCPY_SERVER_PATH`.
 
-To override the icon, configure its path in `SCRCPY_ICON_PATH`.
+Pour rédéfinir l'icône, configurez son chemin dans `SCRCPY_ICON_PATH`.
 
 
 ## Pourquoi _scrcpy_?
