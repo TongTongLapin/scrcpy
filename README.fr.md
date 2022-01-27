@@ -166,25 +166,27 @@ It accepts command-line arguments, listed by:
 scrcpy --help
 ```
 
-## Features
+## Fonctions
 
-### Capture configuration
+### Configuration de Capture
 
-#### Reduce size
+#### Réduire la taille
 
-Sometimes, it is useful to mirror an Android device at a lower definition to
-increase performance.
+Parfois, c'est utile de réfléchir un appareil d'Android à une définition inférieure pour
+augmenter la performance.
 
-To limit both the width and height to some value (e.g. 1024):
+Pour limiter à la fois la largeur et la hauteur à une certaine valeur (par exemple 1024):
 
 ```bash
 scrcpy --max-size 1024
 scrcpy -m 1024  # short version
 ```
 
-The other dimension is computed to that the device aspect ratio is preserved.
-That way, a device in 1920×1080 will be mirrored at 1024×576.
+L'autre diménsion est calculée pour que le format d'image de l'appareil soit préservé.
 
+
+That way, a device in 1920×1080 will be mirrored at 1024×576.
+De cette façon, un appareil en 1920×1080 sera réfléchi en 1024×576.
 
 #### Change bit-rate
 
